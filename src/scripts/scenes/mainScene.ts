@@ -182,7 +182,7 @@ export default class MainScene extends Scene3D {
     let spacePress = this.input.keyboard.addKey('SPACE')
     let spacePressDown = spacePress.isDown;
     if(spacePressDown){
-      this.character.body.applyForceY(6)
+      this.character.body.applyForceY(2)
     }
     
   }//update()
