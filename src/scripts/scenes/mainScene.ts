@@ -1,5 +1,6 @@
 import { enable3d, Scene3D, Canvas, THREE, ExtendedObject3D, PhysicsLoader, ThirdPersonControls, PointerLock, PointerDrag } from '@enable3d/phaser-extension'
 import Phaser from 'phaser'
+import { AmbientLight } from 'three'
 
 export default class MainScene extends Scene3D {
   constructor() {
@@ -7,7 +8,7 @@ export default class MainScene extends Scene3D {
   }
 
   init() {
-    this.accessThirdDimension({antialias: true})
+    this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }})
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg')
     this.third.renderer.outputEncoding = THREE.LinearEncoding
   }
@@ -23,12 +24,19 @@ export default class MainScene extends Scene3D {
   async create() {
     
     //Simple Map##############
-    const total = await this.third.warpSpeed()
-    console.log('warpSpeed', total)
-    // this.third.warpSpeed()
-    // this.lights
-    // const { lights } = this.third.warpSpeed('-ground', '-orbitControls')
-    ;(await this.third.warpSpeed()).camera
+    // const {lights} = await this.third.warpSpeed();
+    let total = await this.third.warpSpeed('-ground');
+    console.log('warpSpeed', total);
+    this.third.camera.position.set(0, 10, 20);
+    let directionalLight = this.third.lights.directionalLight();
+    directionalLight.intensity = 0.5;
+    directionalLight.color.setRGB(0, 0, 1)
+    console.log('scene:', this.third.scene)
+
+    // console.log('lightcolor', lightColor)
+
+    // console.log('directionalLight', directionalLightIntensity)
+
 
   
     // Creates allMap ##################
@@ -59,13 +67,25 @@ export default class MainScene extends Scene3D {
     })
 
     //add a robot
-    this.third.load.gltf('./assets/low_poly_character_kit_animation/robot.gltf').then(gltf => {
-      const child = gltf.scene.children[0]
-
-      const character = new ExtendedObject3D()
-      character.add(child)
+    this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
+      
+      const child = gltf.scene.children[0];
+      console.log('gltf.scene', gltf);
+      // const robot = new ExtendedObject3D();
+      const character = new ExtendedObject3D();
+      console.log('character', character)
+      // character.rotateY(Math.PI + 0.1)
+      character.add(child);
+      character.position.set(2, 2, 2)
       this.third.scene.add(character)
 
+      this.third.animationMixers.add(character.anims.mixer)
+            gltf.animations.forEach(animation => {
+              if (animation.name) {
+                character.anims.add(animation.name, animation)
+              }
+            })
+            character.anims.play('idle')
       // let i = 0
       // let anims = ['idle', 'walk', 'run', 'jump_start', 'fall', 'reception']
 
@@ -86,13 +106,6 @@ export default class MainScene extends Scene3D {
       //   character.anims.mixer.clipAction(clip).reset().play()
       // })
 
-      this.third.animationMixers.add(character.anims.mixer)
-            gltf.animations.forEach(animation => {
-              if (animation.name) {
-                character.anims.add(animation.name, animation)
-              }
-            })
-            character.anims.play('walk')
 
     // setTimeout(() => {
     //   this.scene.restart()
