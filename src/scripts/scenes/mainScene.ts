@@ -75,24 +75,14 @@ export default class MainScene extends Scene3D {
       const child = gltf.scene.children[0];
       // window.character = child;
       child.traverse((obj)=>{
-        // if (objectsToRemove.includes(obj.name)){
-        //   // console.log(obj.name, obj)
-        //   // obj.visible = false
-        //   // obj.removeFromParent()
-        //   obj.parent.remove(obj)
-        //   // console.log(obj.parent)
-
-        // }
-
         if(obj.name === "Object_4" ){
           obj.children.splice(18, 7)
         }
-      }) //traverse
+      }) //traverse to remove accessories
 
       
       // const character = new ExtendedObject3D();
       console.log('child', child);
-      // const robot = new ExtendedObject3D();
       // this.character.rotateY(Math.PI + 0.1)
       this.character.add(child);
       this.character.position.set(-1, 5, 0)
@@ -165,20 +155,6 @@ export default class MainScene extends Scene3D {
     })
 
     controls.theta = 90
-    //Add controls
-    
-    // const aPress = this.input.keyboard.addKey('a');
-    // const wPress = this.input.keyboard.addKey('w');
-    // const dPress = this.input.keyboard.addKey('d');
-    // const sPress = this.input.keyboard.addKey('s');
-    // const spacePress = this.input.keyboard.addKey('32');
-    
-    // const jump = function(){
-    //   if(keys.space.isDown){
-        
-    //     this.character.body.applyForceY(6)
-    //   }
-    // }
     
   })//robot added
   
@@ -300,6 +276,7 @@ export default class MainScene extends Scene3D {
     // let spacePress = this.input.keyboard.addKey('SPACE')
     // let spacePressDown = spacePress.isDown;
       if(keys.space.isDown){
+        // this.character.anims.play('jump_start')
         this.character.body.applyForceY(1)
       }
     
