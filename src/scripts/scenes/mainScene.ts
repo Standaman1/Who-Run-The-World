@@ -73,15 +73,32 @@ export default class MainScene extends Scene3D {
     this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
       
       const child = gltf.scene.children[0];
+      // window.character = child;
+      child.traverse((obj)=>{
+        // if (objectsToRemove.includes(obj.name)){
+        //   // console.log(obj.name, obj)
+        //   // obj.visible = false
+        //   // obj.removeFromParent()
+        //   obj.parent.remove(obj)
+        //   // console.log(obj.parent)
+
+        // }
+
+        if(obj.name === "Object_4" ){
+          obj.children.splice(18, 7)
+        }
+      }) //traverse
+
+      
       // const character = new ExtendedObject3D();
-      console.log('gltf.scene', gltf);
+      console.log('child', child);
       // const robot = new ExtendedObject3D();
-      console.log('character', this.character)
       // this.character.rotateY(Math.PI + 0.1)
       this.character.add(child);
       this.character.position.set(-1, 5, 0)
       // this.third.scene.add(this.character)
       this.third.add.existing(this.character)
+      console.log('character', this.character)
 
       this.third.animationMixers.add(this.character.anims.mixer)
         gltf.animations.forEach(animation => {
@@ -126,6 +143,8 @@ export default class MainScene extends Scene3D {
     //Add Physics and Detection
     this.character.body.setFriction(0.8)
     this.character.body.setAngularFactor(0, 0, 0)
+    this.character.body.setAngularVelocityY(0)
+
 
     this.character.body.setCcdMotionThreshold(1e-7)
     this.character.body.setCcdSweptSphereRadius(0.25)
@@ -147,14 +166,6 @@ export default class MainScene extends Scene3D {
 
     controls.theta = 90
     //Add controls
-    
-    const keys = {
-      a: this.input.keyboard.addKey('a'),
-      w: this.input.keyboard.addKey('w'),
-      d: this.input.keyboard.addKey('d'),
-      s: this.input.keyboard.addKey('s'),
-      space: this.input.keyboard.addKey(32)
-    }
     
     // const aPress = this.input.keyboard.addKey('a');
     // const wPress = this.input.keyboard.addKey('w');
@@ -179,11 +190,118 @@ export default class MainScene extends Scene3D {
 
   update(time, delta) {
     
-    let spacePress = this.input.keyboard.addKey('SPACE')
-    let spacePressDown = spacePress.isDown;
-    if(spacePressDown){
-      this.character.body.applyForceY(2)
+    //Keys Events
+
+    const keys = {
+      a: this.input.keyboard.addKey('a'),
+      w: this.input.keyboard.addKey('w'),
+      d: this.input.keyboard.addKey('d'),
+      s: this.input.keyboard.addKey('s'),
+      space: this.input.keyboard.addKey(32)
     }
+
+    // Turn Animations
+    const speed = 3
+    const v3 = new THREE.Vector3()
+
+    const rotation = this.third.camera.getWorldDirection(v3)
+    const theta = Math.atan2(rotation.x, rotation.z)
+    const rotationCharacter = this.character.getWorldDirection(v3)
+    const thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
+
+    
+    const l = Math.abs(theta - thetaCharacter)
+    let d = Math.PI / 24
+    let rotationSpeed = 4
+
+    // this.character.body.setAngularVelocityY(0)
+
+
+    // if (l > d) {
+    //   if (l > Math.PI - d || theta < thetaCharacter) {
+    //     rotationSpeed *= -1
+    //     this.character.body.setAngularVelocityY(rotationSpeed)
+    //   } else {
+    //     this.character.body.setAngularVelocityY(rotationSpeed)
+    //   } 
+    // }
+
+    //Character Movements
+    if (keys.w.isDown) {
+
+      if (this.character.anims.current === 'idle'){
+        this.character.anims.play('run')
+
+        let x = Math.sin(theta) * speed
+        let y = this.character.body.velocity.y
+        let z = Math.cos(theta) * speed
+        this.character.body.setVelocity(x, y, z)
+      } 
+
+      } else {
+        if (this.character.anims.current === 'run'){
+          this.character.anims.play('idle')
+        } 
+      }
+
+      if (keys.s.isDown) {
+
+        if (this.character.anims.current === 'idle'){
+          this.character.anims.play('run')
+          
+          let x = Math.sin(theta) * speed
+          let y = this.character.body.velocity.y
+          let z = Math.cos(theta) * speed * -1
+          this.character.body.setVelocity(x, y, z)
+        } 
+  
+        } else {
+          if (this.character.anims.current === 'run'){
+            this.character.anims.play('idle')
+          } 
+        }
+
+        if (keys.a.isDown) {
+
+          if (this.character.anims.current === 'idle'){
+            this.character.anims.play('run')
+            
+            let x = Math.cos(theta) * speed
+            let y = this.character.body.velocity.y
+            let z = Math.sin(theta) * speed
+            this.character.body.setVelocity(x, y, z)
+          } 
+    
+          } else {
+            if (this.character.anims.current === 'run'){
+              this.character.anims.play('idle')
+            } 
+          }
+
+          if (keys.d.isDown) {
+
+            if (this.character.anims.current === 'idle'){
+              this.character.anims.play('run')
+              
+              let x = Math.cos(theta) * speed * -1
+              let y = this.character.body.velocity.y
+              let z = Math.sin(theta) * speed
+              this.character.body.setVelocity(x, y, z)
+            } 
+      
+            } else {
+              if (this.character.anims.current === 'run'){
+                this.character.anims.play('idle')
+              } 
+            }
+
+          
+
+    // let spacePress = this.input.keyboard.addKey('SPACE')
+    // let spacePressDown = spacePress.isDown;
+      if(keys.space.isDown){
+        this.character.body.applyForceY(1)
+      }
     
   }//update()
 
