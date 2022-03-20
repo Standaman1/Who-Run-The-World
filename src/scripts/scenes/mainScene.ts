@@ -1,12 +1,15 @@
 import { enable3d, Scene3D, Canvas, THREE, ExtendedObject3D, PhysicsLoader, ThirdPersonControls, PointerLock, PointerDrag } from '@enable3d/phaser-extension'
 import Phaser from 'phaser'
 
+
 export default class MainScene extends Scene3D {
   constructor() {
     super({ key: 'MainScene' })
   }
-
+  
   character = new ExtendedObject3D();
+  
+  // delta = {};
   
 
   init() {
@@ -69,6 +72,8 @@ export default class MainScene extends Scene3D {
       this.third.physics.add.ground({ width: 20, height: 20, y: 0 }, { phong: { map: grass, transparent: true } })
     })
     
+    this.third.camera.position.set(0, 5, 20)
+    this.third.camera.lookAt(0, 0, 0)
     //add a robot
     this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
       
@@ -133,11 +138,12 @@ export default class MainScene extends Scene3D {
     //Add Physics and Detection
     this.character.body.setFriction(0.8)
     this.character.body.setAngularFactor(0, 0, 0)
-    this.character.body.setAngularVelocityY(0)
+    // this.character.body.setAngularVelocity(0, 0, 0)
 
 
     this.character.body.setCcdMotionThreshold(1e-7)
     this.character.body.setCcdSweptSphereRadius(0.25)
+    // this.character.body.setVelocity(0,0,0)
 
     const sensor = new ExtendedObject3D()
     sensor.position.setY(-0.625)
@@ -154,7 +160,17 @@ export default class MainScene extends Scene3D {
       
     })
 
-    controls.theta = 90
+    // const isTouchDevice =  true
+    // if (isTouchDevice) {
+    //   const pointerLock = new PointerLock(this.game.canvas)
+    //   const pointerDrag = new PointerDrag(this.game.canvas)
+    //   pointerDrag.onMove(delta => {
+    //     if (!pointerLock.isLocked()) return
+    //     const { x, y } = delta
+    //   })
+    // }
+
+    // controls.theta = 90
     
   })//robot added
   
@@ -167,6 +183,7 @@ export default class MainScene extends Scene3D {
   update(time, delta) {
     
     //Keys Events
+    // controls.update()
 
     const keys = {
       a: this.input.keyboard.addKey('a'),
@@ -181,17 +198,114 @@ export default class MainScene extends Scene3D {
     const v3 = new THREE.Vector3()
 
     const rotation = this.third.camera.getWorldDirection(v3)
-    const theta = Math.atan2(rotation.x, rotation.z)
+    let theta = Math.atan2(rotation.x, rotation.z)
     const rotationCharacter = this.character.getWorldDirection(v3)
     const thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
+    // console.log('this.charccher', this.character.body.angularVelocity())
+    // this.character.body.setAngularVelocityY(0)
+
 
     
     const l = Math.abs(theta - thetaCharacter)
+    console.log('theta', theta)
     let d = Math.PI / 24
     let rotationSpeed = 4
-
+    
+    
     // this.character.body.setAngularVelocityY(0)
 
+    const walkAnimation = () => {
+      if (this.character.anims.current !== 'Walking') this.character.anims.play('Walking')
+    }
+
+    const idleAnimation = () => {
+      if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
+    }
+
+    //------------other version----------------------------------
+    // this.character.body.setVelocityX(speed)
+    // console.log('xspeed', this.character.body.velocity.x)
+
+    // if (this.character){
+    // const walkDirection = { x:0, z:0 }
+
+    //           // A key
+    //           if (
+    //             keys.a.isDown) {
+    //             walkDirection.x = -speed
+    //             this.character.body.setVelocityX(walkDirection.x)
+    //             // 
+    //             walkAnimation()
+    //           }
+    //           // D key
+    //           else if (
+    //             keys.d.isDown) {
+    //             walkDirection.x = speed
+    //             this.character.body.setVelocityX(walkDirection.x)
+
+    //             // 
+    //             walkAnimation()
+    //           } else {
+    //             walkDirection.x = 0
+    //             // 
+    //             idleAnimation()
+    //           }
+    //           // W Key
+    //           if (
+    //             keys.s.isDown) {
+    //             walkDirection.z = speed
+    //             this.character.body.setVelocityZ(walkDirection.z)
+
+    //             // 
+    //             walkAnimation()
+    //           }
+    //           // S key
+    //           else if (
+    //             keys.w.isDown) {
+    //             walkDirection.z = -speed
+    //             this.character.body.setVelocityZ(walkDirection.z)
+
+    //             // 
+    //             walkAnimation()
+    //           } else {
+    //             walkDirection.z = 0
+    //             // this.idleAnimation()
+    //           }
+
+    //           // walk
+    //           // this.character.body.setVelocity(walkDirection.x, 0, walkDirection.z)
+    //           // this.character.body.setVelocityZ(walkDirection.z)
+
+    //           // is idle?
+    //           // console.log('walkDirection', walkDirection.x)
+    //           const isIdle = walkDirection.x === 0 && walkDirection.z === 0
+
+    //           if (isIdle) idleAnimation()
+    //           else walkAnimation()
+
+    //           // turn player
+    //           if (!isIdle) {
+    //             let directionTheta = Math.atan2(walkDirection.x, walkDirection.z) + Math.PI
+    //             let playerTheta = this.character.world.theta + Math.PI
+    //             let diff = directionTheta - playerTheta
+    //             console.log(directionTheta, playerTheta, diff)
+    //             if (diff > 0.25) 
+    //             // while(diff !== 0)
+    //             this.character.body.setAngularVelocityY(10)
+    //             if (diff < -0.25) 
+    //             // while(diff !== 0)
+    //             this.character.body.setAngularVelocityY(-10)
+    //           }
+            
+
+    //         // jump
+    //         if (keys.space.isDown && this.character.userData.onGround && Math.abs(this.character.body.velocity.y) < 1e-1) {
+    //           this.character.anims.play('Walk')
+    //           this.character.body.applyForceY(16)
+    //         }
+    //       }
+
+          //---------------------------------------One version
 
     // if (l > d) {
     //   if (l > Math.PI - d || theta < thetaCharacter) {
@@ -202,8 +316,12 @@ export default class MainScene extends Scene3D {
     //   } 
     // }
 
-    //Character Movements
+    // Character Movements
+
+    if (this.character){
+
     if (keys.w.isDown) {
+      // this.character.body.setAngularVelocityY(0)
 
       if (this.character.anims.current === 'idle'){
         this.character.anims.play('run')
@@ -224,6 +342,7 @@ export default class MainScene extends Scene3D {
 
         if (this.character.anims.current === 'idle'){
           this.character.anims.play('run')
+          theta *= -1
           
           let x = Math.sin(theta) * speed
           let y = this.character.body.velocity.y
@@ -241,6 +360,7 @@ export default class MainScene extends Scene3D {
 
           if (this.character.anims.current === 'idle'){
             this.character.anims.play('run')
+            theta *= -1
             
             let x = Math.cos(theta) * speed
             let y = this.character.body.velocity.y
@@ -258,6 +378,8 @@ export default class MainScene extends Scene3D {
 
             if (this.character.anims.current === 'idle'){
               this.character.anims.play('run')
+
+              // theta *= -1
               
               let x = Math.cos(theta) * speed * -1
               let y = this.character.body.velocity.y
@@ -279,6 +401,8 @@ export default class MainScene extends Scene3D {
         // this.character.anims.play('jump_start')
         this.character.body.applyForceY(1)
       }
+
+    } //end controls loop
     
   }//update()
 
