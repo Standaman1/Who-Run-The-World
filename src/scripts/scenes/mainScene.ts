@@ -9,15 +9,13 @@ export default class MainScene extends Scene3D {
   }
   
   character = new ExtendedObject3D();
-  cameraIndex = 0
-  canCameraMove = true
-  camerasArr = new Array
+  camerasArr = new Array;
   
   // delta = {};
   
 
   init() {
-    this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -30, z: 0 }});
+    this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
     // this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
 
@@ -145,7 +143,7 @@ export default class MainScene extends Scene3D {
 
     const sensor = new ExtendedObject3D()
     sensor.position.setY(-0.625)
-    this.third.physics.add.existing(sensor, { mass: 1e-5, shape: 'box', width: 0.2, height: 0.2, depth: 0.2 })
+    this.third.physics.add.existing(sensor, { mass: 1e-10, shape: 'box', width: 0.2, height: 0.2, depth: 0.2 })
     sensor.body.setCollisionFlags(4)
 
     // connect sensor to robot
@@ -179,18 +177,6 @@ export default class MainScene extends Scene3D {
   followCam.position.copy(this.third.camera.position)
   this.character.add(followCam)
   this.camerasArr.push(followCam)
-
-  // back camera
-  const frontCam = new THREE.Object3D()
-  frontCam.position.copy(new THREE.Vector3(0, 3, -5))
-  this.character.add(frontCam)
-  this.camerasArr.push(frontCam)
-
-  // overhead camera
-  const overheadCam = new THREE.Object3D()
-  overheadCam.position.copy(new THREE.Vector3(0, 20, 0))
-  // this.player.add(overheadCam) // uncomment this line if you want the overheadCam follow the player
-  this.camerasArr.push(overheadCam)
 
   
   }//create()
@@ -237,15 +223,7 @@ export default class MainScene extends Scene3D {
     // const idleAnimation = () => {
     //   if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
     // }
-    const cameraArray = this.third.camera.getWorldPosition(v3)
-
-    this.third.camera.position.lerp(
-      cameraArray,
-      0.05
-      )
-
-    const pos = this.character.position.clone()
-    this.third.camera.lookAt(pos.x, pos.y + 3, pos.z)
+    
 
     
     //------------other version----------------------------------
@@ -342,6 +320,15 @@ export default class MainScene extends Scene3D {
     //   } 
     // }
 
+    //Camera Lerp
+    const cameraArray = this.third.camera.getWorldPosition(v3)
+    this.third.camera.position.lerp(
+      cameraArray,
+      0.05
+      )
+    const pos = this.character.position.clone()
+    this.third.camera.lookAt(pos.x, pos.y + 3, pos.z)
+
     // Character Movements
 
     
@@ -429,14 +416,14 @@ export default class MainScene extends Scene3D {
         canJump = false
         this.character.anims.play('jump_start', 500, false)
         this.time.addEvent({
-          delay: 500,
+          delay: 300,
           callback: ()=>{
             canJump = true
             this.character.anims.play('idle')
           }
         })
         
-        this.character.body.applyForceY(8)
+        this.character.body.applyForceY(9)
       }
 
     } //end controls loop
