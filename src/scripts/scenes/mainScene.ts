@@ -9,6 +9,9 @@ export default class MainScene extends Scene3D {
   }
   
   character = new ExtendedObject3D();
+  cameraIndex = 0
+  canCameraMove = true
+  camerasArr = new Array
   
   // delta = {};
   
@@ -16,7 +19,8 @@ export default class MainScene extends Scene3D {
   init() {
     this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -30, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
-    this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
+    // this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
+
 
     this.third.renderer.outputEncoding = THREE.LinearEncoding;
     let canJump = true
@@ -76,12 +80,12 @@ export default class MainScene extends Scene3D {
     })
 
     //add background image
-    this.third.load.texture('backgroundMountain').then(backgroundMountain => {
-      // change encoding to LinearEncoding
-      backgroundMountain.encoding = THREE.LinearEncoding
-      backgroundMountain.needsUpdate = true
-      this.third.scene.background = backgroundMountain
-    })
+    // this.third.load.texture('backgroundMountain').then(backgroundMountain => {
+    //   // change encoding to LinearEncoding
+    //   backgroundMountain.encoding = THREE.LinearEncoding
+    //   backgroundMountain.needsUpdate = true
+    //   this.third.scene.background = backgroundMountain
+    // })
     
     this.third.camera.position.set(0, 10, -20)
     this.third.camera.lookAt(0, 0, 0)
@@ -113,30 +117,13 @@ export default class MainScene extends Scene3D {
           }
         })
       this.character.anims.play('idle')
-      // let i = 0
-      // let anims = ['idle', 'walk', 'run', 'jump_start', 'fall', 'reception']
-
-      // ad the box man's animation mixer to the animationMixers array (for auto updates)
-      // this.third.animationMixers.add(this.character.anims.mixer)
-
-
-      //Animation of this.character- ------
-
-      // gltf.animations.forEach(animation => {
-      //   if (animation.name) {
-      //     // add a new animation to the box man
-      //     this.character.anims.add(animation.name, animation)
-      //   }
-      // })
-
-      // gltf.animations.forEach(clip => {
-      //   this.character.anims.mixer.clipAction(clip).reset().play()
-      // })
 
 
     // setTimeout(() => {
     //   this.scene.restart()
     // }, 60000)
+
+    
 
     //Add Player to the Scene with Body
     this.third.physics.add.existing(this.character, {
@@ -185,7 +172,25 @@ export default class MainScene extends Scene3D {
     
   })//robot added
   
-  
+  //Add Camera Fixed to Body
+
+  const followCam = new THREE.Object3D()
+  // copies the position of the default camera
+  followCam.position.copy(this.third.camera.position)
+  this.character.add(followCam)
+  this.camerasArr.push(followCam)
+
+  // back camera
+  const frontCam = new THREE.Object3D()
+  frontCam.position.copy(new THREE.Vector3(0, 3, -5))
+  this.character.add(frontCam)
+  this.camerasArr.push(frontCam)
+
+  // overhead camera
+  const overheadCam = new THREE.Object3D()
+  overheadCam.position.copy(new THREE.Vector3(0, 20, 0))
+  // this.player.add(overheadCam) // uncomment this line if you want the overheadCam follow the player
+  this.camerasArr.push(overheadCam)
 
   
   }//create()
@@ -225,13 +230,22 @@ export default class MainScene extends Scene3D {
     
     // this.character.body.setAngularVelocityY(0)
 
-    const walkAnimation = () => {
-      if (this.character.anims.current !== 'Walking') this.character.anims.play('Walking')
-    }
+    // const walkAnimation = () => {
+    //   if (this.character.anims.current !== 'Walking') this.character.anims.play('Walking')
+    // }
 
-    const idleAnimation = () => {
-      if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
-    }
+    // const idleAnimation = () => {
+    //   if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
+    // }
+    const cameraArray = this.third.camera.getWorldPosition(v3)
+
+    this.third.camera.position.lerp(
+      cameraArray,
+      0.05
+      )
+
+    const pos = this.character.position.clone()
+    this.third.camera.lookAt(pos.x, pos.y + 3, pos.z)
 
     
     //------------other version----------------------------------
