@@ -14,8 +14,10 @@ export default class MainScene extends Scene3D {
   
 
   init() {
-    this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
+    this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -30, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
+    this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
+
     this.third.renderer.outputEncoding = THREE.LinearEncoding;
     let canJump = true
     
@@ -35,7 +37,6 @@ export default class MainScene extends Scene3D {
     // const {lights} = await this.third.warpSpeed();
     let total = await this.third.warpSpeed('-ground');
     // console.log('warpSpeed', total);
-    this.third.camera.position.set(0, 10, 20);
     let directionalLight = this.third.lights.directionalLight();
     directionalLight.intensity = 0.5;
     directionalLight.color.setRGB(0, 0, 1)
@@ -73,8 +74,16 @@ export default class MainScene extends Scene3D {
       // BUG: To add shadows to your ground, set transparent = true
       this.third.physics.add.ground({ width: 20, height: 20, y: 0 }, { phong: { map: grass, transparent: true } })
     })
+
+    //add background image
+    this.third.load.texture('backgroundMountain').then(backgroundMountain => {
+      // change encoding to LinearEncoding
+      backgroundMountain.encoding = THREE.LinearEncoding
+      backgroundMountain.needsUpdate = true
+      this.third.scene.background = backgroundMountain
+    })
     
-    this.third.camera.position.set(0, 5, -20)
+    this.third.camera.position.set(0, 10, -20)
     this.third.camera.lookAt(0, 0, 0)
     //add a robot
     this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
@@ -321,13 +330,15 @@ export default class MainScene extends Scene3D {
 
     // Character Movements
 
+    
+
     if (this.character){
 
     if (keys.w.isDown) {
       // this.character.body.setAngularVelocityY(0)
 
       if (this.character.anims.current === 'idle'){
-        this.character.anims.play('run')
+        this.character.anims.play('run', 15, true)
 
         let x = Math.sin(theta) * speed
         let y = this.character.body.velocity.y
@@ -398,8 +409,7 @@ export default class MainScene extends Scene3D {
 
           
             let canJump =  true
-    // let spacePress = this.input.keyboard.addKey('SPACE')
-    // let spacePressDown = spacePress.isDown;
+    
       if(Phaser.Input.Keyboard.JustDown(keys.space)){
         
         canJump = false
@@ -412,7 +422,7 @@ export default class MainScene extends Scene3D {
           }
         })
         
-        this.character.body.applyForceY(10)
+        this.character.body.applyForceY(8)
       }
 
     } //end controls loop
