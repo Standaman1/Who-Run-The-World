@@ -1,5 +1,6 @@
 import { enable3d, Scene3D, Canvas, THREE, ExtendedObject3D, PhysicsLoader, ThirdPersonControls, PointerLock, PointerDrag } from '@enable3d/phaser-extension'
-import Phaser from 'phaser'
+import Phaser from 'phaser';
+
 
 
 export default class MainScene extends Scene3D {
@@ -16,6 +17,7 @@ export default class MainScene extends Scene3D {
     this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
     this.third.renderer.outputEncoding = THREE.LinearEncoding;
+    let canJump = true
     
   }
 
@@ -72,7 +74,7 @@ export default class MainScene extends Scene3D {
       this.third.physics.add.ground({ width: 20, height: 20, y: 0 }, { phong: { map: grass, transparent: true } })
     })
     
-    this.third.camera.position.set(0, 5, 20)
+    this.third.camera.position.set(0, 5, -20)
     this.third.camera.lookAt(0, 0, 0)
     //add a robot
     this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
@@ -138,7 +140,7 @@ export default class MainScene extends Scene3D {
     //Add Physics and Detection
     this.character.body.setFriction(0.8)
     this.character.body.setAngularFactor(0, 0, 0)
-    // this.character.body.setAngularVelocity(0, 0, 0)
+    this.character.body.setAngularVelocity(0, 0, 0)
 
 
     this.character.body.setCcdMotionThreshold(1e-7)
@@ -147,7 +149,7 @@ export default class MainScene extends Scene3D {
 
     const sensor = new ExtendedObject3D()
     sensor.position.setY(-0.625)
-    this.third.physics.add.existing(sensor, { mass: 1e-8, shape: 'box', width: 0.2, height: 0.2, depth: 0.2 })
+    this.third.physics.add.existing(sensor, { mass: 1e-5, shape: 'box', width: 0.2, height: 0.2, depth: 0.2 })
     sensor.body.setCollisionFlags(4)
 
     // connect sensor to robot
@@ -190,7 +192,7 @@ export default class MainScene extends Scene3D {
       w: this.input.keyboard.addKey('w'),
       d: this.input.keyboard.addKey('d'),
       s: this.input.keyboard.addKey('s'),
-      space: this.input.keyboard.addKey(32)
+      space: this.input.keyboard.addKey(32, false, false)
     }
 
     // Turn Animations
@@ -207,8 +209,8 @@ export default class MainScene extends Scene3D {
 
     
     const l = Math.abs(theta - thetaCharacter)
-    console.log('theta', theta)
-    let d = Math.PI / 24
+    // console.log('theta', theta)
+    const d = Math.PI / 24
     let rotationSpeed = 4
     
     
@@ -222,6 +224,7 @@ export default class MainScene extends Scene3D {
       if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
     }
 
+    
     //------------other version----------------------------------
     // this.character.body.setVelocityX(speed)
     // console.log('xspeed', this.character.body.velocity.x)
@@ -341,7 +344,7 @@ export default class MainScene extends Scene3D {
       if (keys.s.isDown) {
 
         if (this.character.anims.current === 'idle'){
-          this.character.anims.play('run')
+          this.character.anims.play('run', 1000, true)
           theta *= -1
           
           let x = Math.sin(theta) * speed
@@ -394,12 +397,22 @@ export default class MainScene extends Scene3D {
             }
 
           
-
+            let canJump =  true
     // let spacePress = this.input.keyboard.addKey('SPACE')
     // let spacePressDown = spacePress.isDown;
-      if(keys.space.isDown){
-        // this.character.anims.play('jump_start')
-        this.character.body.applyForceY(1)
+      if(Phaser.Input.Keyboard.JustDown(keys.space)){
+        
+        canJump = false
+        this.character.anims.play('jump_start', 500, false)
+        this.time.addEvent({
+          delay: 500,
+          callback: ()=>{
+            canJump = true
+            this.character.anims.play('idle')
+          }
+        })
+        
+        this.character.body.applyForceY(10)
       }
 
     } //end controls loop
