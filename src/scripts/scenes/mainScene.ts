@@ -1,5 +1,8 @@
 import { enable3d, Scene3D, Canvas, THREE, ExtendedObject3D, PhysicsLoader, ThirdPersonControls, PointerLock, PointerDrag } from '@enable3d/phaser-extension'
 import Phaser from 'phaser';
+import { Physics } from 'phaser';
+import { AmmoPhysics } from '@enable3d/ammo-physics';
+
 
 
 
@@ -10,6 +13,11 @@ export default class MainScene extends Scene3D {
   
   character = new ExtendedObject3D();
   camerasArr = new Array;
+  newTree = new ExtendedObject3D;
+  // box = new ExtendedObject3D();
+  // sphere = new ExtendedObject3D();
+  
+
   
   // delta = {};
   
@@ -18,6 +26,7 @@ export default class MainScene extends Scene3D {
     this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
     // this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
+    
 
 
     this.third.renderer.outputEncoding = THREE.LinearEncoding;
@@ -61,6 +70,29 @@ export default class MainScene extends Scene3D {
     // })
     // creates map
     
+    //add background image
+    // this.third.load.texture('backgroundMountain').then(backgroundMountain => {
+    //   // change encoding to LinearEncoding
+    //   backgroundMountain.encoding = THREE.LinearEncoding
+    //   backgroundMountain.needsUpdate = true
+    //   this.third.scene.background = backgroundMountain
+    // })
+
+    //Add tree
+
+    // const newTree = new ExtendedObject3D()
+
+    this.third.load.fbx('./assets/img/tree.fbx').then(tree => {
+      console.log('tree', tree)
+      this.newTree.add(tree)
+      this.newTree.position.set(5, 1, 5)
+
+      this.third.add.existing(this.newTree)
+      this.third.physics.add.existing(this.newTree, { shape: 'box', offset: { y: -0.5 } })
+    })
+
+    this.newTree.scale.set(0.002, 0.002, 0.002)
+
 
     // adds a box with physics ##################
     this.third.physics.add.box({ x: -1, y: 2 })
@@ -73,21 +105,15 @@ export default class MainScene extends Scene3D {
       grass.offset.set(0, 0)
       grass.repeat.set(2, 2)
 
-      // BUG: To add shadows to your ground, set transparent = true
       this.third.physics.add.ground({ width: 20, height: 20, y: 0 }, { phong: { map: grass, transparent: true } })
     })
 
-    //add background image
-    // this.third.load.texture('backgroundMountain').then(backgroundMountain => {
-    //   // change encoding to LinearEncoding
-    //   backgroundMountain.encoding = THREE.LinearEncoding
-    //   backgroundMountain.needsUpdate = true
-    //   this.third.scene.background = backgroundMountain
-    // })
     
     this.third.camera.position.set(0, 10, -20)
     this.third.camera.lookAt(0, 0, 0)
-    //add a robot
+
+
+    //add a robot----------------------------
     this.third.load.gltf('./assets/low_poly_character_kit_animation/scene.gltf').then(gltf => {
       
       const child = gltf.scene.children[0];
@@ -170,7 +196,7 @@ export default class MainScene extends Scene3D {
     
   })//robot added
   
-  //Add Camera Fixed to Body
+  //Add Camera Fixed to Body------------------
 
   const followCam = new THREE.Object3D()
   // copies the position of the default camera
@@ -178,40 +204,52 @@ export default class MainScene extends Scene3D {
   this.character.add(followCam)
   this.camerasArr.push(followCam)
 
+  //Add Breakable Physics--------------------
+
+  let boxNew = new ExtendedObject3D();
+  let sphereNew = new ExtendedObject3D();
+
+  boxNew = this.third.make.box({ x: 0.75, y: 1.75, z: -0.25 })
+  sphereNew = this.third.make.sphere({ radius: 0.5, x: 1, y: 2 })
+          const int = this.third.csg.intersect(boxNew, sphereNew)
+          const sub = this.third.csg.subtract(boxNew, sphereNew)
+          const uni = this.third.csg.union(boxNew, sphereNew)
+
+          const mat = this.third.add.material()
+
+          const geometries = [int, sub, uni]
+          geometries.forEach((geo, i) => {
+            geo.position.setX((i - 1) * 2)
+            geo.position.setY(5)
+            geo.rotateX(10)
+            geo.material = mat
+            geo.castShadow = geo.receiveShadow = true
+            // this.third.physics.add.existing(geo, {breakable: true })
+            // this.third.physics.add.existing(int, {breakable: true})
+          })
+
+          // this.third.physics.add.existing(int)
+
+          // const objects = [int, sub, uni]
+          this.third.scene.add(int, sub, uni)
   
   }//create()
 
 
   update(time, delta) {
     
+    
     //Keys Events
     // controls.update()
 
     const keys = {
-      a: this.input.keyboard.addKey('a'),
       w: this.input.keyboard.addKey('w'),
-      d: this.input.keyboard.addKey('d'),
+      a: this.input.keyboard.addKey('a'),
       s: this.input.keyboard.addKey('s'),
+      d: this.input.keyboard.addKey('d'),
       space: this.input.keyboard.addKey(32, false, false)
     }
 
-    // Turn Animations
-    const speed = 3
-    const v3 = new THREE.Vector3()
-
-    const rotation = this.third.camera.getWorldDirection(v3)
-    let theta = Math.atan2(rotation.x, rotation.z)
-    const rotationCharacter = this.character.getWorldDirection(v3)
-    const thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
-    // console.log('this.charccher', this.character.body.angularVelocity())
-    // this.character.body.setAngularVelocityY(0)
-
-
-    
-    const l = Math.abs(theta - thetaCharacter)
-    // console.log('theta', theta)
-    const d = Math.PI / 24
-    let rotationSpeed = 4
     
     
     // this.character.body.setAngularVelocityY(0)
@@ -311,14 +349,9 @@ export default class MainScene extends Scene3D {
 
           //---------------------------------------One version
 
-    // if (l > d) {
-    //   if (l > Math.PI - d || theta < thetaCharacter) {
-    //     rotationSpeed *= -1
-    //     this.character.body.setAngularVelocityY(rotationSpeed)
-    //   } else {
-    //     this.character.body.setAngularVelocityY(rotationSpeed)
-    //   } 
-    // }
+    
+
+    const v3 = new THREE.Vector3()
 
     //Camera Lerp
     const cameraArray = this.third.camera.getWorldPosition(v3)
@@ -334,6 +367,32 @@ export default class MainScene extends Scene3D {
     
 
     if (this.character){
+
+      // Turn Animations
+    const speed = 3
+
+    const rotation = this.third.camera.getWorldDirection(v3)
+    let theta = Math.atan2(rotation.x, rotation.z)
+    const rotationCharacter = this.character.getWorldDirection(v3)
+    const thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
+    // console.log('this.charccher', this.character.body.angularVelocity())
+    // this.character.body.setAngularVelocityY(0)
+
+
+    
+    const l = Math.abs(theta - thetaCharacter)
+    // console.log('theta', theta)
+    const d = Math.PI / 24
+    let rotationSpeed = 4
+    
+    if (l > d) {
+      if (l > Math.PI - d || theta < thetaCharacter) {
+        rotationSpeed *= -1
+        // this.character.body.setAngularVelocityY(rotationSpeed)
+      } else {
+        // this.character.body.setAngularVelocityY(rotationSpeed)
+      } 
+    }
 
     if (keys.w.isDown) {
       // this.character.body.setAngularVelocityY(0)
