@@ -86,12 +86,20 @@ export default class MainScene extends Scene3D {
       console.log('tree', tree)
       this.newTree.add(tree)
       this.newTree.position.set(5, 1, 5)
-
+      
       this.third.add.existing(this.newTree)
-      this.third.physics.add.existing(this.newTree, { shape: 'box', offset: { y: -0.5 } })
+      this.third.physics.add.existing(this.newTree, { 
+        shape: 'box', 
+        offset: { y: -0.5 }, 
+        width: 5,
+        height: 5,
+        depth: 5 })
+      this.newTree.body.setCollisionFlags(1)
+  
     })
 
-    this.newTree.scale.set(0.002, 0.002, 0.002)
+    this.newTree.scale.set(0.003, 0.003, 0.003)
+    // this.newTree.body.setCollisionFlags(2)
 
 
     // adds a box with physics ##################
@@ -105,11 +113,11 @@ export default class MainScene extends Scene3D {
       grass.offset.set(0, 0)
       grass.repeat.set(2, 2)
 
-      this.third.physics.add.ground({ width: 20, height: 20, y: 0 }, { phong: { map: grass, transparent: true } })
+      this.third.physics.add.ground({ width: 25, height: 25, y: 0 }, { phong: { map: grass, transparent: true } })
     })
 
     
-    this.third.camera.position.set(0, 10, -20)
+    this.third.camera.position.set(-5, 10, -25)
     this.third.camera.lookAt(0, 0, 0)
 
 
@@ -129,6 +137,7 @@ export default class MainScene extends Scene3D {
       console.log('child', child);
       // this.character.rotateY(Math.PI + 0.1)
       this.character.add(child);
+      this.character.name = 'Dan'
       this.character.position.set(-1, 5, 0)
       // this.third.scene.add(this.character)
       this.third.add.existing(this.character)
@@ -211,28 +220,38 @@ export default class MainScene extends Scene3D {
 
   boxNew = this.third.make.box({ x: 0.75, y: 1.75, z: -0.25 })
   sphereNew = this.third.make.sphere({ radius: 0.5, x: 1, y: 2 })
-          const int = this.third.csg.intersect(boxNew, sphereNew)
-          const sub = this.third.csg.subtract(boxNew, sphereNew)
-          const uni = this.third.csg.union(boxNew, sphereNew)
+  const int = this.third.csg.intersect(boxNew, sphereNew)
+  const sub = this.third.csg.subtract(boxNew, sphereNew)
+  const uni = this.third.csg.union(boxNew, sphereNew)
 
-          const mat = this.third.add.material()
+  const mat = this.third.add.material()
 
-          const geometries = [int, sub, uni]
-          geometries.forEach((geo, i) => {
-            geo.position.setX((i - 1) * 2)
-            geo.position.setY(5)
-            geo.rotateX(10)
-            geo.material = mat
-            geo.castShadow = geo.receiveShadow = true
-            // this.third.physics.add.existing(geo, {breakable: true })
-            // this.third.physics.add.existing(int, {breakable: true})
-          })
+  const geometries = [int, sub, uni]
+  geometries.forEach((geo, i) => {
+    geo.position.setX((i - 1) * 2)
+    geo.position.setY(5)
+    geo.rotateX(10)
+    geo.material = mat
+    geo.castShadow = geo.receiveShadow = true
+    // this.third.physics.add.existing(geo, {breakable: true })
+    // this.third.physics.add.existing(int, {breakable: true})
+  })
 
-          // this.third.physics.add.existing(int)
+  // this.third.physics.add.existing(int)
 
-          // const objects = [int, sub, uni]
-          this.third.scene.add(int, sub, uni)
-  
+  // const objects = [int, sub, uni]
+  this.third.scene.add(int, sub, uni)
+
+  //Add Collision Detection Events
+
+  this.third.physics.add.collider(this.newTree, this.character, event=>{
+    console.log('Collided')
+  })
+  this.newTree.body.on.collision((otherObject, event) => {
+    if (otherObject.name == 'Dan'){
+      console.log(`tree and ${otherObject.name}: ${event}`)}
+  })
+
   }//create()
 
 
@@ -362,37 +381,37 @@ export default class MainScene extends Scene3D {
     const pos = this.character.position.clone()
     this.third.camera.lookAt(pos.x, pos.y + 3, pos.z)
 
+    if (this.character && this.character.body){
+    // Turn Animations
+    
+      const speed = 6
+      
+      const rotation = this.third.camera.getWorldDirection(v3)
+      let theta = Math.atan2(rotation.x, rotation.z)
+      const rotationCharacter = this.character.getWorldDirection(v3)
+      let thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
+      // console.log('this.charccher', this.character.body.angularVelocity())
+      // this.character.body.setAngularVelocityY(0)
+      
+      const l = Math.abs(theta - thetaCharacter)
+      // console.log('theta', theta)
+      const d = Math.PI / 24
+      let rotationSpeed = 4
+      
+      
+      if (l > d) {
+        if (l > Math.PI - d || theta < thetaCharacter) {
+          rotationSpeed *= -1
+          this.character.body.setAngularVelocityY(rotationSpeed)
+          // console.log('this.characheterbody', this.character)
+        } else {
+          this.character.body.setAngularVelocityY(rotationSpeed)
+        } 
+      }
+    
     // Character Movements
 
-    
 
-    if (this.character){
-
-      // Turn Animations
-    const speed = 3
-
-    const rotation = this.third.camera.getWorldDirection(v3)
-    let theta = Math.atan2(rotation.x, rotation.z)
-    const rotationCharacter = this.character.getWorldDirection(v3)
-    const thetaCharacter = Math.atan2(rotationCharacter.x, rotationCharacter.z)
-    // console.log('this.charccher', this.character.body.angularVelocity())
-    // this.character.body.setAngularVelocityY(0)
-
-
-    
-    const l = Math.abs(theta - thetaCharacter)
-    // console.log('theta', theta)
-    const d = Math.PI / 24
-    let rotationSpeed = 4
-    
-    if (l > d) {
-      if (l > Math.PI - d || theta < thetaCharacter) {
-        rotationSpeed *= -1
-        // this.character.body.setAngularVelocityY(rotationSpeed)
-      } else {
-        // this.character.body.setAngularVelocityY(rotationSpeed)
-      } 
-    }
 
     if (keys.w.isDown) {
       // this.character.body.setAngularVelocityY(0)
