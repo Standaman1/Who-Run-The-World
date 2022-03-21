@@ -19,8 +19,36 @@ export default class MainScene extends Scene3D {
   treeCollide = false
   newStump = new ExtendedObject3D;
 
-  
 
+  stumpCreate(xPos, yPos, zPos){
+      this.third.load.gltf('./assets/stump/scene.gltf').then(stump => {
+        
+        console.log('stump', stump.scene.children[0])
+        const child = stump.scene.children[0];
+  
+        this.newStump.add(child)
+        // this.newStump.visible = false
+        this.newStump.position.set(xPos, yPos, zPos)
+  
+        this.newStump.name = 'stumpy'
+        
+        this.third.physics.add.existing(this.newStump, { 
+          shape: 'box', 
+          offset: { y: -0.5 }, 
+          width: 2,
+          height: 2,
+          depth: 2
+        })
+        this.newStump.body.setCollisionFlags(1)
+        this.third.add.existing(this.newStump)
+        
+      })
+      
+      this.newStump.scale.set(0.2, 0.2, 0.2)
+      console.log('this.newStump', this.newStump)
+    console.log('stumpcreate()', xPos, yPos, zPos)
+
+  }
   
   // delta = {};
   
@@ -28,7 +56,6 @@ export default class MainScene extends Scene3D {
   init() {
     this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
-    // this.third.load.preload('stump', './assets/stump/scene.gltf')
     // this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
 
 
@@ -36,14 +63,6 @@ export default class MainScene extends Scene3D {
     let canJump = true
     
   }
-
-  // async preLoad(){
-  //   const swamp = this.third.load.preload('swamp', './assets/swamp_location/scene.gltf')
-
-  //   const robot = this.third.load.preload('robot', './assets/low_poly_character_kit_animation/robot.gltf')
-
-  //   await Promise.all([swamp, robot])
-  // }
 
   async create() {
     
@@ -54,23 +73,42 @@ export default class MainScene extends Scene3D {
     let directionalLight = this.third.lights.directionalLight();
     directionalLight.intensity = 0.5;
     directionalLight.color.setRGB(0, 0, 1)
-    // console.log('scene:', this.third.scene)
-
-    // console.log('lightcolor', lightColor)
 
     // console.log('directionalLight', directionalLightIntensity)
 
 
   
     // Creates allMap ##################
-  //   this.third.load.gltf('./assets/swamp_location/scene.gltf').then(object => {
+  //   this.third.load.gltf('./assets/low_poly_lake_house/scene.gltf').then(object => {
+  //     console.log('map', object)
   //     const scene = object.scenes[0]
   //     const allMap = new ExtendedObject3D()
   //     allMap.name = 'scene'
   //     allMap.add(scene)
+  //     allMap.scale.set(3, 3, 3)
   //     this.third.add.existing(allMap)
+  //     console.log('allMap', allMap)
+
+  //     allMap.traverse(child => {
+  //       if (child.type === "Mesh") {
+  //         child.castShadow = child.receiveShadow = false
+  //         // child.material.metalness = 0
+  //         // child.material.roughness = 1
+
+  //         if (/mesh/i.test(child.name)) {
+  //           this.third.physics.add.existing(child, {
+  //             shape: 'concave',
+  //             mass: 0,
+  //             collisionFlags: 1,
+  //             autoCenter: false
+  //           })
+  //           child.body.setAngularFactor(0, 0, 0)
+  //           child.body.setLinearFactor(0, 0, 0)
+  //         }
+  //       }
+  //     })
+
   // })
-    // })
     // creates map
     
     //add background image
@@ -97,37 +135,22 @@ export default class MainScene extends Scene3D {
         offset: { y: -0.5 }, 
         width: 2,
         height: 2,
-        depth: 2 })
+        depth: 2 
+      })
       this.newTree.body.setCollisionFlags(1)
 
     })
 
     this.newTree.scale.set(0.003, 0.003, 0.003)
 
+    // this.stumpCreate(xPos, yPos, zPos)
+
+   
+      // return this.newStump
+    
 
     //Add Stump
-     this.third.load.gltf('./assets/stump/scene.gltf').then(stump => {
-      console.log('stump', stump.scene.children[0])
-      const child = stump.scene.children[0];
-
-      this.newStump.add(child)
-      // this.newStump.visible = false
-      // this.newStump.position.set(3, 3, 3)
-
-      this.newStump.name = 'stumpy'
-      
-      this.third.add.existing(this.newStump)
-      this.third.physics.add.existing(this.newStump, { 
-        shape: 'box', 
-        offset: { y: -0.5 }, 
-        width: 1,
-        height: 1,
-        depth: 1})
-      this.newStump.body.setCollisionFlags(1)
-  
-    })
-
-    this.newStump.scale.set(0.1, 0.1, 0.1)
+    
 
 
     // adds a box with physics ##################
@@ -241,35 +264,6 @@ export default class MainScene extends Scene3D {
   this.character.add(followCam)
   this.camerasArr.push(followCam)
 
-  //Add Breakable Physics--------------------
-
-  // let boxNew = new ExtendedObject3D();
-  // let sphereNew = new ExtendedObject3D();
-
-  // boxNew = this.third.make.box({ x: 0.75, y: 1.75, z: -0.25 })
-  // sphereNew = this.third.make.sphere({ radius: 0.5, x: 1, y: 2 })
-  // const int = this.third.csg.intersect(boxNew, sphereNew)
-  // const sub = this.third.csg.subtract(boxNew, sphereNew)
-  // const uni = this.third.csg.union(boxNew, sphereNew)
-
-  // const mat = this.third.add.material()
-
-  // const geometries = [int, sub, uni]
-  // geometries.forEach((geo, i) => {
-  //   geo.position.setX((i - 1) * 2)
-  //   geo.position.setY(5)
-  //   geo.rotateX(10)
-  //   geo.material = mat
-  //   geo.castShadow = geo.receiveShadow = true
-  //   // this.third.physics.add.existing(geo, {breakable: true })
-  //   // this.third.physics.add.existing(int, {breakable: true})
-  // })
-
-  // this.third.physics.add.existing(int)
-
-  // const objects = [int, sub, uni]
-  // this.third.scene.add(int, sub, uni)
-
   //Add Collision Detection Events
 
   this.third.physics.add.collider(this.newTree, this.character, event=>{
@@ -288,9 +282,6 @@ export default class MainScene extends Scene3D {
 
   update(time, delta) {
     
-    
-    //Keys Events
-    // controls.update()
 
     const keys = {
       w: this.input.keyboard.addKey('w'),
@@ -301,19 +292,6 @@ export default class MainScene extends Scene3D {
       c: this.input.keyboard.addKey('c'),
       
     }
-
-    
-    
-    // this.character.body.setAngularVelocityY(0)
-
-    // const walkAnimation = () => {
-    //   if (this.character.anims.current !== 'Walking') this.character.anims.play('Walking')
-    // }
-
-    // const idleAnimation = () => {
-    //   if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
-    // }
-    
 
     const v3 = new THREE.Vector3()
 
@@ -449,21 +427,19 @@ export default class MainScene extends Scene3D {
         this.character.body.applyForceY(9)
       }
 
-      if(Phaser.Input.Keyboard.JustDown(keys.c) && this.treeCollide && this.newStump.body){
+      if(Phaser.Input.Keyboard.JustDown(keys.c) && this.treeCollide){
         this.character.anims.play('interact', 300, false)
         console.log('chopped')
         const treePos = this.newTree.getWorldPosition(v3)
-        this.newStump.body.setPosition(treePos.x, treePos.y + 1, treePos.z)
-        // this.newTree.remove()
         this.treeCollide = false
         this.third.destroy(this.newTree)
-        // this.newTree.visible = false
+        // this.third.scene.add(this.newStump)
+        // this.newStump.body.setPosition(treePos.x, treePos.y + 1, treePos.z)
+        this.stumpCreate(treePos.x, treePos.y, treePos.z)
         this.time.addEvent({
           delay: 300,
           callback: ()=>{
             this.character.anims.play('idle')
-            
-
             
           }
 
