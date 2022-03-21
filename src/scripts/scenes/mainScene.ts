@@ -18,6 +18,9 @@ export default class MainScene extends Scene3D {
   // sphere = new ExtendedObject3D();
   treeCollide = false
   newStump = new ExtendedObject3D;
+  sun = new ExtendedObject3D;
+  earth = new ExtendedObject3D;
+
 
 
   stumpCreate(xPos, yPos, zPos){
@@ -76,7 +79,12 @@ export default class MainScene extends Scene3D {
 
     // console.log('directionalLight', directionalLightIntensity)
 
+    this.sun = this.third.physics.add.sphere({ x: 2, y: 2, z: 1, radius: 1 }, { basic: { color: 0xffff00 } })
+    this.earth = this.third.physics.add.sphere({ y: 1, radius: 1 }, { basic: { color: 0x0080ff } })
 
+    // both are kinematic objects
+    this.sun.body.setCollisionFlags(2)
+    this.earth.body.setCollisionFlags(2)
   
     // Creates allMap ##################
   //   this.third.load.gltf('./assets/low_poly_lake_house/scene.gltf').then(object => {
@@ -282,6 +290,30 @@ export default class MainScene extends Scene3D {
 
   update(time, delta) {
     
+
+    if (this.earth && this.earth.body){
+
+    
+    //Sun and Earth Interplay
+    const orbitRadius = 5
+    const date = time * 0.0025
+    const { x, y, z } = this.earth.position.clone()
+
+    // make object orbit around a center
+    this.earth.position.set(
+      Math.cos(date) * orbitRadius + this.sun.position.x,
+      y,
+      Math.sin(date) * orbitRadius + this.sun.position.z
+    )
+    
+    const angle = Math.atan2(this.sun.position.x - x, this.sun.position.z - z)
+    this.earth.rotation.set(0, angle, 0)
+
+    // console.log('this.earth', this.earth)
+
+    this.earth.body.needUpdate = true
+  
+  }
 
     const keys = {
       w: this.input.keyboard.addKey('w'),
