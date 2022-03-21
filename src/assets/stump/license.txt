@@ -1,0 +1,11 @@
+Model Information:
+* title:	Stump
+* source:	https://sketchfab.com/3d-models/stump-09011ac594d64d27898d8502cb6a765f
+* author:	toAflame (https://sketchfab.com/toAflame)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Stump" (https://sketchfab.com/3d-models/stump-09011ac594d64d27898d8502cb6a765f) by toAflame (https://sketchfab.com/toAflame) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -11,11 +11,14 @@ export default class MainScene extends Scene3D {
     super({ key: 'MainScene' })
   }
   
-  character = new ExtendedObject3D();
+  character = new ExtendedObject3D;
   camerasArr = new Array;
   newTree = new ExtendedObject3D;
   // box = new ExtendedObject3D();
   // sphere = new ExtendedObject3D();
+  treeCollide = false
+  newStump = new ExtendedObject3D;
+
   
 
   
@@ -25,8 +28,8 @@ export default class MainScene extends Scene3D {
   init() {
     this.accessThirdDimension({antialias: true, gravity: { x: 0, y: -20, z: 0 }});
     this.third.load.preload('grass', './assets/img/grass-texture-1.jpg');
+    // this.third.load.preload('stump', './assets/stump/scene.gltf')
     // this.third.load.preload('backgroundMountain', './assets/background_screen/background_mountain.png');
-    
 
 
     this.third.renderer.outputEncoding = THREE.LinearEncoding;
@@ -82,24 +85,49 @@ export default class MainScene extends Scene3D {
 
     // const newTree = new ExtendedObject3D()
 
-    this.third.load.fbx('./assets/img/tree.fbx').then(tree => {
+    await this.third.load.fbx('./assets/img/tree.fbx').then(tree => {
       console.log('tree', tree)
       this.newTree.add(tree)
       this.newTree.position.set(5, 1, 5)
+      this.newTree.name = 'treeCollide'
       
       this.third.add.existing(this.newTree)
       this.third.physics.add.existing(this.newTree, { 
         shape: 'box', 
         offset: { y: -0.5 }, 
-        width: 5,
-        height: 5,
-        depth: 5 })
+        width: 2,
+        height: 2,
+        depth: 2 })
       this.newTree.body.setCollisionFlags(1)
-  
+
     })
 
     this.newTree.scale.set(0.003, 0.003, 0.003)
-    // this.newTree.body.setCollisionFlags(2)
+
+
+    //Add Stump
+     this.third.load.gltf('./assets/stump/scene.gltf').then(stump => {
+      console.log('stump', stump.scene.children[0])
+      const child = stump.scene.children[0];
+
+      this.newStump.add(child)
+      // this.newStump.visible = false
+      // this.newStump.position.set(3, 3, 3)
+
+      this.newStump.name = 'stumpy'
+      
+      this.third.add.existing(this.newStump)
+      this.third.physics.add.existing(this.newStump, { 
+        shape: 'box', 
+        offset: { y: -0.5 }, 
+        width: 1,
+        height: 1,
+        depth: 1})
+      this.newStump.body.setCollisionFlags(1)
+  
+    })
+
+    this.newStump.scale.set(0.1, 0.1, 0.1)
 
 
     // adds a box with physics ##################
@@ -215,32 +243,32 @@ export default class MainScene extends Scene3D {
 
   //Add Breakable Physics--------------------
 
-  let boxNew = new ExtendedObject3D();
-  let sphereNew = new ExtendedObject3D();
+  // let boxNew = new ExtendedObject3D();
+  // let sphereNew = new ExtendedObject3D();
 
-  boxNew = this.third.make.box({ x: 0.75, y: 1.75, z: -0.25 })
-  sphereNew = this.third.make.sphere({ radius: 0.5, x: 1, y: 2 })
-  const int = this.third.csg.intersect(boxNew, sphereNew)
-  const sub = this.third.csg.subtract(boxNew, sphereNew)
-  const uni = this.third.csg.union(boxNew, sphereNew)
+  // boxNew = this.third.make.box({ x: 0.75, y: 1.75, z: -0.25 })
+  // sphereNew = this.third.make.sphere({ radius: 0.5, x: 1, y: 2 })
+  // const int = this.third.csg.intersect(boxNew, sphereNew)
+  // const sub = this.third.csg.subtract(boxNew, sphereNew)
+  // const uni = this.third.csg.union(boxNew, sphereNew)
 
-  const mat = this.third.add.material()
+  // const mat = this.third.add.material()
 
-  const geometries = [int, sub, uni]
-  geometries.forEach((geo, i) => {
-    geo.position.setX((i - 1) * 2)
-    geo.position.setY(5)
-    geo.rotateX(10)
-    geo.material = mat
-    geo.castShadow = geo.receiveShadow = true
-    // this.third.physics.add.existing(geo, {breakable: true })
-    // this.third.physics.add.existing(int, {breakable: true})
-  })
+  // const geometries = [int, sub, uni]
+  // geometries.forEach((geo, i) => {
+  //   geo.position.setX((i - 1) * 2)
+  //   geo.position.setY(5)
+  //   geo.rotateX(10)
+  //   geo.material = mat
+  //   geo.castShadow = geo.receiveShadow = true
+  //   // this.third.physics.add.existing(geo, {breakable: true })
+  //   // this.third.physics.add.existing(int, {breakable: true})
+  // })
 
   // this.third.physics.add.existing(int)
 
   // const objects = [int, sub, uni]
-  this.third.scene.add(int, sub, uni)
+  // this.third.scene.add(int, sub, uni)
 
   //Add Collision Detection Events
 
@@ -248,8 +276,11 @@ export default class MainScene extends Scene3D {
     console.log('Collided')
   })
   this.newTree.body.on.collision((otherObject, event) => {
-    if (otherObject.name == 'Dan'){
-      console.log(`tree and ${otherObject.name}: ${event}`)}
+    if (otherObject.name === 'Dan'){
+      // console.log(`tree and ${otherObject.name}: ${event}`)
+      this.treeCollide = true
+      
+    }
   })
 
   }//create()
@@ -266,7 +297,9 @@ export default class MainScene extends Scene3D {
       a: this.input.keyboard.addKey('a'),
       s: this.input.keyboard.addKey('s'),
       d: this.input.keyboard.addKey('d'),
-      space: this.input.keyboard.addKey(32, false, false)
+      space: this.input.keyboard.addKey(32, false, false),
+      c: this.input.keyboard.addKey('c'),
+      
     }
 
     
@@ -280,94 +313,6 @@ export default class MainScene extends Scene3D {
     // const idleAnimation = () => {
     //   if (this.character.anims.current !== 'Idle') this.character.anims.play('Idle')
     // }
-    
-
-    
-    //------------other version----------------------------------
-    // this.character.body.setVelocityX(speed)
-    // console.log('xspeed', this.character.body.velocity.x)
-
-    // if (this.character){
-    // const walkDirection = { x:0, z:0 }
-
-    //           // A key
-    //           if (
-    //             keys.a.isDown) {
-    //             walkDirection.x = -speed
-    //             this.character.body.setVelocityX(walkDirection.x)
-    //             // 
-    //             walkAnimation()
-    //           }
-    //           // D key
-    //           else if (
-    //             keys.d.isDown) {
-    //             walkDirection.x = speed
-    //             this.character.body.setVelocityX(walkDirection.x)
-
-    //             // 
-    //             walkAnimation()
-    //           } else {
-    //             walkDirection.x = 0
-    //             // 
-    //             idleAnimation()
-    //           }
-    //           // W Key
-    //           if (
-    //             keys.s.isDown) {
-    //             walkDirection.z = speed
-    //             this.character.body.setVelocityZ(walkDirection.z)
-
-    //             // 
-    //             walkAnimation()
-    //           }
-    //           // S key
-    //           else if (
-    //             keys.w.isDown) {
-    //             walkDirection.z = -speed
-    //             this.character.body.setVelocityZ(walkDirection.z)
-
-    //             // 
-    //             walkAnimation()
-    //           } else {
-    //             walkDirection.z = 0
-    //             // this.idleAnimation()
-    //           }
-
-    //           // walk
-    //           // this.character.body.setVelocity(walkDirection.x, 0, walkDirection.z)
-    //           // this.character.body.setVelocityZ(walkDirection.z)
-
-    //           // is idle?
-    //           // console.log('walkDirection', walkDirection.x)
-    //           const isIdle = walkDirection.x === 0 && walkDirection.z === 0
-
-    //           if (isIdle) idleAnimation()
-    //           else walkAnimation()
-
-    //           // turn player
-    //           if (!isIdle) {
-    //             let directionTheta = Math.atan2(walkDirection.x, walkDirection.z) + Math.PI
-    //             let playerTheta = this.character.world.theta + Math.PI
-    //             let diff = directionTheta - playerTheta
-    //             console.log(directionTheta, playerTheta, diff)
-    //             if (diff > 0.25) 
-    //             // while(diff !== 0)
-    //             this.character.body.setAngularVelocityY(10)
-    //             if (diff < -0.25) 
-    //             // while(diff !== 0)
-    //             this.character.body.setAngularVelocityY(-10)
-    //           }
-            
-
-    //         // jump
-    //         if (keys.space.isDown && this.character.userData.onGround && Math.abs(this.character.body.velocity.y) < 1e-1) {
-    //           this.character.anims.play('Walk')
-    //           this.character.body.applyForceY(16)
-    //         }
-    //       }
-
-          //---------------------------------------One version
-
     
 
     const v3 = new THREE.Vector3()
@@ -503,6 +448,31 @@ export default class MainScene extends Scene3D {
         
         this.character.body.applyForceY(9)
       }
+
+      if(Phaser.Input.Keyboard.JustDown(keys.c) && this.treeCollide && this.newStump.body){
+        this.character.anims.play('interact', 300, false)
+        console.log('chopped')
+        const treePos = this.newTree.getWorldPosition(v3)
+        this.newStump.body.setPosition(treePos.x, treePos.y + 1, treePos.z)
+        // this.newTree.remove()
+        this.treeCollide = false
+        this.third.destroy(this.newTree)
+        // this.newTree.visible = false
+        this.time.addEvent({
+          delay: 300,
+          callback: ()=>{
+            this.character.anims.play('idle')
+            
+
+            
+          }
+
+        })
+        // console.log('treePos', treePos)
+
+      }
+
+      
 
     } //end controls loop
     
