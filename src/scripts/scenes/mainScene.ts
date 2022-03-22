@@ -1,7 +1,5 @@
 import { enable3d, Scene3D, Canvas, THREE, ExtendedObject3D, PhysicsLoader, ThirdPersonControls, PointerLock, PointerDrag } from '@enable3d/phaser-extension'
 import Phaser from 'phaser';
-import { Physics } from 'phaser';
-import { AmmoPhysics } from '@enable3d/ammo-physics';
 
 
 
@@ -356,7 +354,7 @@ export default class MainScene extends Scene3D {
       
       const l = Math.abs(theta - thetaCharacter)
       // console.log('theta', theta)
-      const d = Math.PI / 24
+      const d = Math.PI / 256
       let rotationSpeed = 4
       
       
@@ -493,8 +491,8 @@ export default class MainScene extends Scene3D {
         // this.third.scene.add(this.newStump)
         // this.newStump.body.setPosition(treePos.x, treePos.y + 1, treePos.z)
         const pushEarth = this.character.getWorldDirection(v3)
-        console.log(pushEarth)
-        this.character.body.applyForce(pushEarth.x * -5, pushEarth.y * -5, pushEarth.z * -5)
+        // console.log(pushEarth)
+        this.character.body.applyForce(pushEarth.x * -10, pushEarth.y * -10, pushEarth.z * -10)
         this.earthCollide = false
         this.time.addEvent({
           delay: 300,
